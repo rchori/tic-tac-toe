@@ -4,4 +4,4 @@ Notes:
 
 -distance 30-40 cm
 
--resources
+**resources** folder contains media files, link to a trained facial shape predictor and build classification model (open/closed eye)
