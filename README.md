@@ -2,4 +2,5 @@
 
 Notes:
 -distance 30-40 cm
+
 -resources
