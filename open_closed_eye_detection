@@ -1,3 +1,4 @@
+
 import tensorflow as tf
 from tensorflow import keras
 import cv2
@@ -9,9 +10,9 @@ my_model = tf.keras.models.load_model('resources/my_model')
 class_names = ['closed eye', 'open eye']
 
 cap = cv2.VideoCapture(0)
-sound = pyglet.media.load("soundMy.wav", streaming=False)
+#sound = pyglet.media.load("resources/soundMy.wav", streaming=False)
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+predictor = dlib.shape_predictor("resources/shape_predictor_68_face_landmarks.dat")
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 while True:
