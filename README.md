@@ -9,7 +9,7 @@
 
 **open_closed_eye_detection.py** detects eye frame based on face_landmark_detection and identify whether the right eye is open or closed with the help of the classification model
 
-Note: the appropriate distance between a web camera and an eye is about 30-40 cm
+**Note:** the appropriate distance between a web camera and an eye is about 30-40 cm
 
 # How to play
 
