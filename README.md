@@ -21,6 +21,11 @@ As a result, given your right eye is detected, you will see 3 windows: the playi
 
 # Game logic
 
-* 1
-* 2
-* 3
+* No Peripherals are used during the game
+* Each cell is highlighted in turn
+* To put a cross in a certain place, just close your eyes for a while
+* If the cell is empty, you will hear the corresponding sound and a cross will appear at this place
+* Otherwise, you will hear another sound with the ability to put a cross in a different place
+* The game's over if you win, you lose, it's a tie, you quit
+* You can quit the app by pressing the 'esc' button
+* To restart the game, please execute the script once again
