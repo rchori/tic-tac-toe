@@ -29,14 +29,14 @@ def get_possible_moves(board):
 #get_possible_moves(theBoard)
 
 def winning(board, player):
-    if any([theBoard[0] == theBoard[1] == theBoard[2] == player,
-            theBoard[3] == theBoard[4] == theBoard[5] == player,
-            theBoard[6] == theBoard[7] == theBoard[8] == player,
-            theBoard[0] == theBoard[3] == theBoard[6] == player,
-            theBoard[1] == theBoard[4] == theBoard[7] == player,
-            theBoard[2] == theBoard[5] == theBoard[8] == player,
-            theBoard[0] == theBoard[4] == theBoard[8] == player,
-            theBoard[2] == theBoard[4] == theBoard[6] == player]):
+    if any([board[0] == board[1] == board[2] == player,
+            board[3] == board[4] == board[5] == player,
+            board[6] == board[7] == board[8] == player,
+            board[0] == board[3] == board[6] == player,
+            board[1] == board[4] == board[7] == player,
+            board[2] == board[5] == board[8] == player,
+            board[0] == board[4] == board[8] == player,
+            board[2] == board[4] == board[6] == player]):
         return True
     else:
         return False
