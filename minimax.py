@@ -56,22 +56,17 @@ def minimax(newBoard, player):
     
     for i in range (0, len(availSpots)):
         move = {}
-        #move['index'] = newBoard[availSpots[i]]
         move['index'] = availSpots[i]
-        #move.index = newBoard[availSpots[i]]
         
         newBoard[availSpots[i]] = player
         
         if (player == aiPlayer):
             result = minimax(newBoard, huPlayer)
             move['score'] = result['score']
-            #move.score = result.score;
         else:
             result = minimax(newBoard, aiPlayer)
             move['score'] = result['score']
-            #move.score = result.score;
         
-        #newBoard[availSpots[i]] = move['index']
         newBoard[availSpots[i]] = ' '
         
         moves.append(move)
