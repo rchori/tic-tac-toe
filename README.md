@@ -5,6 +5,8 @@
 
 **game.py** runs Tic-Tac-Toe Game
 
+**minimax.py** represents Tic-Tac-Toe game without GUI to focus on the game logic - Minimax Algorithm
+
 **model.py** builds the image classification model using Convolutional Neural Networks
 
 **open_closed_eye_detection.py** detects eye frame based on face_landmark_detection and identify whether the right eye is open or closed with the help of the classification model
