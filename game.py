@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow import keras
-
 import numpy as np
 import cv2
 import dlib
@@ -13,8 +12,8 @@ class_names = ['closed eye', 'open eye']
 arena = np.zeros((600, 600, 3), np.uint8)
 symbols_set = {0: "", 1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: ""}
 
-sound_Ok = pyglet.media.load("resources/soundMy.wav", streaming=False)
-sound_Veto = pyglet.media.load("resources/beep.wav", streaming=False)
+sound_ok = pyglet.media.load("resources/soundMy.wav", streaming=False)
+sound_veto = pyglet.media.load("resources/beep.wav", streaming=False)
 
 cap = cv2.VideoCapture(0)
 
@@ -23,18 +22,101 @@ predictor = dlib.shape_predictor("resources/shape_predictor_68_face_landmarks.da
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 font2 = cv2.FONT_HERSHEY_PLAIN
-turn = "x"
+huPlayer = 'x'
+aiPlayer = 'o'
+player = huPlayer
 frames = 0
 index = 0
 blinking_frames = 0
-gaze_frames = 0
 count = 0
 
 img_width = 24
 img_height = 24
 dim = (img_width, img_height)
 
-def draw_arena(index, symbol, cell_light, eye_blinking, turn_x_o):
+def get_possible_moves(board):
+    possibleMoves = []
+    for i in board:
+        if board[i] == "":
+            possibleMoves.append(i)
+    return possibleMoves
+
+def winning(board, player):
+    if any([board[0] == board[1] == board[2] == player,
+            board[3] == board[4] == board[5] == player,
+            board[6] == board[7] == board[8] == player,
+            board[0] == board[3] == board[6] == player,
+            board[1] == board[4] == board[7] == player,
+            board[2] == board[5] == board[8] == player,
+            board[0] == board[4] == board[8] == player,
+            board[2] == board[4] == board[6] == player]):
+        return True
+    else:
+        return False
+
+def minimax(newBoard, player):
+    
+    availSpots = get_possible_moves(newBoard)
+    
+    if winning(newBoard, huPlayer):
+        return {'score':-10}
+    elif winning(newBoard, aiPlayer):
+        return {'score':10}
+    elif len(availSpots) == 0:
+        return {'score':0}
+
+    moves = []
+    
+    for i in range (0, len(availSpots)):
+        move = {}
+        move['index'] = availSpots[i]
+        
+        newBoard[availSpots[i]] = player
+        
+        if (player == aiPlayer):
+            result = minimax(newBoard, huPlayer)
+            move['score'] = result['score']
+        else:
+            result = minimax(newBoard, aiPlayer)
+            move['score'] = result['score']
+        
+        newBoard[availSpots[i]] = ""
+        
+        moves.append(move)
+    
+    if(player == aiPlayer):
+        bestScore = -10000;
+        for i in range (0, len(moves)):
+            if(moves[i]['score'] > bestScore):
+                bestScore = moves[i]['score']
+                bestMove = i
+    else:
+        bestScore = 10000
+        for i in range (0, len(moves)):
+            if(moves[i]['score'] < bestScore):
+                bestScore = moves[i]['score']
+                bestMove = i
+    
+    return moves[bestMove]
+
+def game_over(board, player, draw):
+    result = "No"
+        
+    if player == huPlayer:
+        player = aiPlayer
+    else:
+        player = huPlayer
+        
+    if winning(board, player) == True:
+        result = "Yes"
+        cv2.putText(arena, ("* " + player + " *" + " WINNER!"), (100, 300), font2, 3, (255, 255, 255), thickness=3)
+        
+    elif draw == 9:
+        result = "Tie"
+        cv2.putText(arena, ("TIE!"), (250, 300), font2, 3, (255, 255, 255), thickness=3)
+    return result
+
+def draw_arena(index, symbol, cell_light, eye_blinking):
     # Cells
     if index == 0:
         x = 0
@@ -64,8 +146,7 @@ def draw_arena(index, symbol, cell_light, eye_blinking, turn_x_o):
         x = 400
         y = 400
     
-
-    global count, turn
+    global count, player
     
     # Cell settings
     width = 200
@@ -73,10 +154,9 @@ def draw_arena(index, symbol, cell_light, eye_blinking, turn_x_o):
     th = 2 # thickness
     
     # Symbol settings
-    font_symbol = cv2.FONT_HERSHEY_PLAIN
     font_scale = 10
     font_th = 6
-    symbol_size = cv2.getTextSize(symbol, font_symbol, font_scale, font_th)[0]
+    symbol_size = cv2.getTextSize(symbol, font2, font_scale, font_th)[0]
     width_symbol, height_symbol = symbol_size[0], symbol_size[1]
     symbol_x = int((width - width_symbol) / 2) + x
     symbol_y = int((height + height_symbol) / 2) + y
@@ -84,79 +164,29 @@ def draw_arena(index, symbol, cell_light, eye_blinking, turn_x_o):
     if cell_light is True:
         cv2.rectangle(arena, (x + th, y + th), (x + width - th, y + height - th), (174, 255, 0), -1)
         
-        if turn_x_o == "x":
+        if player == huPlayer:
             if eye_blinking is True:
                 if symbols_set[index] == "":
-                    symbols_set[index] = turn_x_o
+                    symbols_set[index] = player
                     count += 1
-                    turn = "o"
-                    sound_Ok.play()
+                    player = aiPlayer
+                    sound_ok.play()
                 else:
-                    sound_Veto.play()
+                    sound_veto.play()
+        
         else:
-            computer_move(symbols_set)
+            moveAI = minimax(symbols_set, player)['index']
+            symbols_set[moveAI] = player
+            count += 1
+            player = huPlayer
+    
     else:
         cv2.rectangle(arena, (x + th, y + th), (x + width - th, y + height - th), (148, 166, 0), th)
     
     if symbol == "x":
-        cv2.putText(arena, symbol, (symbol_x, symbol_y), font_symbol, font_scale, (84, 84, 84), font_th)
+        cv2.putText(arena, symbol, (symbol_x, symbol_y), font2, font_scale, (84, 84, 84), font_th)
     else:
-        cv2.putText(arena, symbol, (symbol_x, symbol_y), font_symbol, font_scale, (243, 236, 208), font_th)
-
-### ### ###
-
-def someoneWon(symbols_set_win, turn_x_o, game_over):
-    result = "No"
-    if any([symbols_set_win[0] == symbols_set_win[1] == symbols_set_win[2] != "",
-            symbols_set_win[3] == symbols_set_win[4] == symbols_set_win[5] != "",
-            symbols_set_win[6] == symbols_set_win[7] == symbols_set_win[8] != "",
-            symbols_set_win[0] == symbols_set_win[3] == symbols_set_win[6] != "",
-            symbols_set_win[1] == symbols_set_win[4] == symbols_set_win[7] != "",
-            symbols_set_win[2] == symbols_set_win[5] == symbols_set_win[8] != "",
-            symbols_set_win[0] == symbols_set_win[4] == symbols_set_win[8] != "",
-            symbols_set_win[2] == symbols_set_win[4] == symbols_set_win[6] != ""]):
-        result = "Yes"
-        if turn_x_o == "x":
-            turn_x_o = "o"
-        else:
-            turn_x_o = "x"
-        cv2.putText(arena, ("* " + turn_x_o + " *" + " WINNER!"), (100, 300), font2, 3, (255, 255, 255), thickness=3)
-        cv2.destroyWindow("Eye") 
-        cv2.destroyWindow("Frame") 
-    elif game_over == len(symbols_set):
-        result = "Tie"
-        cv2.putText(arena, ("TIE!"), (250, 300), font2, 3, (255, 255, 255), thickness=3)
-    return result
-
-### ### ###
-
-def computer_move(can_win):
-    global count, turn
-    can_win_coord = ((0,1,2),(3,4,5),(6,7,8),(0,3,6),(1,4,7),(2,5,8),(0,4,8),(2,4,6))
-    for each in can_win_coord:
-        if (can_win[each[0]] == can_win[each[1]] != "") and (can_win[each[2]] == ""):
-            can_win[each[2]] = "o"
-            count += 1
-            turn = "x"
-            break
-        elif (can_win[each[0]] == can_win[each[2]] != "") and (can_win[each[1]] == ""):
-            can_win[each[1]] = "o"
-            count += 1
-            turn = "x"
-            break
-        elif (can_win[each[1]] == can_win[each[2]] != "") and (can_win[each[0]] == ""):
-            can_win[each[0]] = "o"
-            count += 1
-            turn = "x"
-            break
-    if turn == "o":
-        moveComp = random.randint(0, 8)
-        if symbols_set[moveComp] == "":
-            symbols_set[moveComp] = "o"
-            count += 1
-            turn = "x"
-
-### ### ###
+        cv2.putText(arena, symbol, (symbol_x, symbol_y), font2, font_scale, (243, 236, 208), font_th)
 
 while True:
     _, frame = cap.read()
@@ -169,7 +199,7 @@ while True:
     
     faces = detector(frame) #use detector to find landmarks
     
-    if (someoneWon(symbols_set, turn, count)) == "No":
+    if (game_over(symbols_set, player, count)) == "No":
         
         for face in faces:
             landmarks = predictor(frame, face)
@@ -222,14 +252,17 @@ while True:
                 light = True
             else:
                 light = False
-            draw_arena(i, symbols_set[i], light, blinking, turn)
+            draw_arena(i, symbols_set[i], light, blinking)
     
+    else:
+        cv2.destroyWindow("Eye")
+
     cv2.imshow("Frame", frame)
     cv2.imshow("Tic-Tac-Toe", arena)
 
     key = cv2.waitKey(1)
     if key == 27: #esc
         break
-
+    
 cap.release()
 cv2.destroyAllWindows()
