@@ -29,5 +29,5 @@ As a result, given your right eye is detected, you will see 3 windows: the playi
 * If the cell is empty, you will hear the corresponding sound and a cross will appear at this place
 * Otherwise, you will hear another sound with the ability to put a cross in a different place
 * The game's over if you win, you lose, it's a tie, you quit
-* You can quit the app by pressing the 'esc' button
+* You can quit the app by pressing the 'esc' button at any time
 * To restart the game, please execute the script once again
